@@ -1,5 +1,7 @@
 "use client";
 
+import { signIn } from "next-auth/react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+// import { useSession } from "next-auth/react";
 
 // Define schema using Zod
 const loginSchema = z.object({
@@ -17,6 +21,11 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
+  const router = useRouter();
+
+  // const { data: session } = useSession();
+  // console.log("session::", session);
+
   const {
     register,
     handleSubmit,
@@ -25,9 +34,21 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginFormInputs) => {
+  const onSubmit = async (data: LoginFormInputs) => {
     console.log("Form Values:", data);
-    // Handle form submission logic here
+
+    const result = await signIn("credentials", {
+      redirect: false,
+      email: data.username,
+      password: data.password,
+    });
+
+    console.log("result::", result);
+
+    if (!result?.error) {
+      // set some auth state
+      router.replace("/");
+    }
   };
 
   return (

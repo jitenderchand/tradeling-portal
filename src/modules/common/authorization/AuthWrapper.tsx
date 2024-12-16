@@ -1,45 +1,21 @@
 "use client";
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AuthStatus } from "@/modules/common/authorization/models/auth.model";
-import { IUser } from "@/modules/common/models/user";
-import { AuthRepository } from "@/services/auth.repository";
-
-export interface IAuthContext {
-  status: AuthStatus;
-  user: IUser | null;
-  permissions: string[];
-}
-
-const AppContext = createContext<IAuthContext>({
-  status: AuthStatus.UNKNOWN, // to check if authenticated or not
-  user: null, // store all the user details
-  permissions: [],
-});
+import { SessionProvider } from "next-auth/react";
 
 export function AuthWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
-  const status = AuthStatus.UNAUTHENTICATED;
-  const user = null;
-  const permissions: string[] = [];
-
-  const authContext: IAuthContext = {
-    status,
-    user,
-    permissions,
-  };
-
   useEffect(() => {
-    const hasToken = AuthRepository.hasToken();
+    const hasToken = true;
     if (!hasToken) {
       router.push("/login");
     }
   }, []);
 
   return (
-    <AppContext.Provider value={authContext}>
+    <SessionProvider>
       {children}
       {/* {status !== AuthStatus.UNKNOWN ? (
         children
@@ -53,9 +29,6 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )} */}
-    </AppContext.Provider>
+    </SessionProvider>
   );
-}
-export function useAppContext() {
-  return useContext(AppContext);
 }
